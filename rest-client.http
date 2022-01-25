@@ -1,5 +1,5 @@
-@apiurl_1 = http://localhost:8000/api
-@apiurl_2 = https://crm-laravel-api.herokuapp.com/api
+@apiurl_2 = http://localhost:8000/api
+@apiurl_1 = https://crm-laravel-api.herokuapp.com/api
 @access_token = {{login.response.body.$.data.access_token}}
 
 ###

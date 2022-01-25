@@ -13,6 +13,6 @@ class VerifyCsrfToken extends Middleware
      */
     protected $except = [
         'http://localhost:8000/*',
-        'https://crm-laravel-api.herokuapp.com/*'
+        'https://crm-laravel-api.herokuapp.com/api/*'
     ];
 }
