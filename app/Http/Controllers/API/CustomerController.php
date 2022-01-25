@@ -149,6 +149,24 @@ class CustomerController extends BaseController
         //       return apiResponse.successResponseWithData(res, apiResponse.Success, []);
         //     }
         //   });
+
+        // {
+        //     "status": true,
+        //     "message": "İşlem başarılı",
+        //     "data": [
+        //       {
+        //         "_id": "5ff0b8cd39e97c14f0f56757",
+        //         "isActive": true,
+        //         "userId": "5fccaa2c9065c724ec82d0ca",
+        //         "tcNo": "19826406590",
+        //         "firstName": "AKadir123",
+        //         "lastName": "Temel",
+        //         "phone": "5462161670",
+        //         "email": "",
+        //         "created": "2021-01-16T20:17:39.688Z",
+        //         "updated": "2021-01-16T20:47:47.000Z",
+        //         "__v": 0
+        //       },
     } 
 
     private function SelectByKey($input)
@@ -289,6 +307,17 @@ class CustomerController extends BaseController
         // } catch (err) {
         //   return apiResponse.ErrorResponse(res, err);
         // }
+
+        // {
+        //     "status": true,
+        //     "message": "İşlem başarılı",
+        //     "data": [
+        //       {
+        //         "_id": "5fccaa2c9065c724ec82d0ca",
+        //         "totalCount": 745
+        //       }
+        //     ]
+        // }
     }
 
     private function TransferRecords($input)
@@ -306,7 +335,7 @@ class CustomerController extends BaseController
 
 
         $db_ext = \DB::connection('pgsql_external');  
-        $sigortaList = $db_ext->table('sigorta')->limit(1000)->get(); 
+        $sigortaList = $db_ext->table('sigorta')->limit(10000)->get(); 
 
         $response['countList'] = count($sigortaList);        
         $userid = Auth::user()->id;

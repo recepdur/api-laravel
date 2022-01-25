@@ -1,5 +1,5 @@
 @apiurl_1 = http://localhost:8000/api
-@apiurl_2 = https://rcp-laravel-api.herokuapp.com/api
+@apiurl_2 = https://crm-laravel-api.herokuapp.com/api
 @access_token = {{login.response.body.$.data.access_token}}
 
 ###
@@ -21,12 +21,29 @@ POST {{apiurl_1}}/customers
 Content-Type: application/json
 Authorization: Bearer {{access_token}}
 
-{   
+{
     "methodName": "SelectByColumns",
     "data": {
-        "userId":"1111" 
+        "userId":"1111"
+        //"_id":"5fb02e7d6dc0271a305c759a",
+         //"isActive" : false
     }
 }
+
+###
+POST {{apiurl_1}}/customers
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{   
+    "methodName": "SelectCustomerStatistics",
+    "data": {
+        "userId":"1111",
+        "isActive" : true,
+        "chartNo": 1 
+    }
+}
+
 
 ###
 POST {{apiurl_1}}/customers
