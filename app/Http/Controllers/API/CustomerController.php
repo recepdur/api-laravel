@@ -90,8 +90,7 @@ class CustomerController extends BaseController
 
     public function index(Request $request)
     {
-        $input = $request->all();
-        $validator = Validator::make($input, [
+        $validator = Validator::make($request->all(), [
             'methodName' => 'required'
         ]);
 
@@ -99,184 +98,120 @@ class CustomerController extends BaseController
             return $this->sendError($validator->errors());
         }
 
-        $methodName = $input["methodName"];
-        switch ($methodName) {
+        switch ($request->input('methodName')) {
             case "SelectByColumns":
-                return $this->SelectByColumns($input);
+                return $this->SelectByColumns($request);
             case "SelectByKey":
-                return $this->SelectByKey($input);
+                return $this->SelectByKey($request);
             case "Insert":
-                return $this->Insert($input);
+                return $this->Insert($request);
             case "Update":
-                return $this->Update($input);
+                return $this->Update($request);
             case "Delete":
-                return $this->Delete($input);
+                return $this->Delete($request);
             case "SelectCustomerStatistics":
-                return $this->SelectCustomerStatistics($input);
+                return $this->SelectCustomerStatistics($request);
             case "TransferRecords":
-                return $this->TransferRecords($input);
+                return $this->TransferRecords($request);
             default:
                 return $this->sendError("Method not found!");
         }
     }
 
-    private function SelectByColumns($input)
+    private function SelectByColumns($request)
     {
         $userid = Auth::user()->id;
-        $data = $input["data"]; 
-        //$userid = $data["userId"]; 
         $customers = Customer::where('user_id', $userid)->get(); 
         return $this->sendResponse(CustomerResource::collection($customers), 'Customers fetched.');
-
-        // let { userId, _id, isActive, firstName } = data;
-        // let matchStr = {
-        //   userId: mongoose.Types.ObjectId(userId),
-        // };
-
-        // if (_id) matchStr._id = mongoose.Types.ObjectId(_id);
-        // if (isActive != undefined) matchStr.isActive = isActive;
-        // if (firstName) matchStr.firstName = new RegExp(firstName, 'i'); // insensitive   
-
-        // Customer
-        //   .aggregate([
-        //     { $match: matchStr },
-        //     { $sort: { firstName: 1 } }
-        //   ])
-        //   .then((customers) => {
-        //     if (customers.length > 0) {
-        //       return apiResponse.successResponseWithData(res, apiResponse.Success, customers);
-        //     } else {
-        //       return apiResponse.successResponseWithData(res, apiResponse.Success, []);
-        //     }
-        //   });
-
-        // {
-        //     "status": true,
-        //     "message": "İşlem başarılı",
-        //     "data": [
-        //       {
-        //         "_id": "5ff0b8cd39e97c14f0f56757",
-        //         "isActive": true,
-        //         "userId": "5fccaa2c9065c724ec82d0ca",
-        //         "tcNo": "19826406590",
-        //         "firstName": "AKadir123",
-        //         "lastName": "Temel",
-        //         "phone": "5462161670",
-        //         "email": "",
-        //         "created": "2021-01-16T20:17:39.688Z",
-        //         "updated": "2021-01-16T20:47:47.000Z",
-        //         "__v": 0
-        //       },
     } 
 
-    private function SelectByKey($input)
+    private function SelectByKey($request)
     {
-        $customer = Customer::find($id);
+        if (!$request->has(['data', 'data.id'])) {
+            return $this->sendError('Data can not be null.');
+        }        
+        $userid = Auth::user()->id;
+        $id = $request->input('data.id');
+        $customer = Customer::where('id', $id)->where('user_id', $userid)->first();
         if (is_null($customer)) {
             return $this->sendError('Customer does not exist.');
         }
         return $this->sendResponse(new CustomerResource($customer), 'Customer fetched.');
+    }
+
+    private function Insert($request)
+    {
+        $userid = Auth::user()->id;
+
+        $newCustomer = new Customer;
+        $newCustomer->user_id = $userid;
+        if ($request->has(['data.first_name'])) 
+            $newCustomer->first_name = $request->input('data.first_name');
+        if ($request->has(['data.last_name'])) 
+            $newCustomer->last_name = $request->input('data.last_name');
+        if ($request->has(['data.phone'])) 
+            $newCustomer->phone = $request->input('data.phone');
+        if ($request->has(['data.email'])) 
+            $newCustomer->email = $request->input('data.email');
+        if ($request->has(['data.tc_no'])) 
+            $newCustomer->tc_no = $request->input('data.tc_no');
+        if ($request->has(['data.status'])) 
+            $newCustomer->status = $request->input('data.status');
+        else
+            $newCustomer->status = true;
+        $newCustomer->save();
+
+        return $this->sendResponse(new CustomerResource($newCustomer), 'Customer inserted.');
+    }
+
+    private function Update($request)
+    {
+        if (!$request->has(['data', 'data.id'])) {
+            return $this->sendError('Data can not be null.');
+        }        
+        $userid = Auth::user()->id;
+        $id = $request->input('data.id');
+        $customer = Customer::where('id', $id)->where('user_id', $userid)->first();
+        if (is_null($customer)) {
+            return $this->sendError('Customer does not exist.');
+        }
+        if ($request->has(['data.first_name'])) 
+            $customer->first_name = $request->input('data.first_name');
+        if ($request->has(['data.last_name'])) 
+            $customer->last_name = $request->input('data.last_name');
+        if ($request->has(['data.phone'])) 
+            $customer->phone = $request->input('data.phone');
+        if ($request->has(['data.email'])) 
+            $customer->email = $request->input('data.email');
+        if ($request->has(['data.tc_no'])) 
+            $customer->tc_no = $request->input('data.tc_no');
+        if ($request->has(['data.status'])) 
+            $customer->status = $request->input('data.status');
+        $customer->save();
+
+        return $this->sendResponse(new CustomerResource($customer), 'Customer updated.');
+    }
+
+    private function Delete($request)
+    {
+        if (!$request->has(['data', 'data.id'])) {
+            return $this->sendError('Data can not be null.');
+        }        
+        $userid = Auth::user()->id;
+        $id = $request->input('data.id');
+        $customer = Customer::where('id', $id)->where('user_id', $userid)->first();
+        if (is_null($customer)) {
+            return $this->sendError('Customer does not exist.');
+        }
+
+        // TODO sigorta var mı kontrolü yapılmalı foregin key hatası veriryor.
         
-        // const { _id } = data;
-        // if (!mongoose.Types.ObjectId.isValid(_id)) {
-        //   return apiResponse.validationErrorWithData(res, apiResponse.InvalidInfo, {});
-        // }
-        // Customer.findOne({ "_id": _id })
-        //   .then((customer) => {
-        //     if (customer !== null) {
-        //       let customerData = new CustomerData(customer);
-        //       return apiResponse.successResponseWithData(res, apiResponse.Success, customerData);
-        //     } else {
-        //       return apiResponse.successResponseWithData(res, apiResponse.Success, {});
-        //     }
-        //   });
+        $customer->delete();
+
+        return $this->sendResponse(new CustomerResource($customer), 'Customer deleted.');
     }
 
-    private function Insert($input)
-    {
-        // const { userId, tcNo } = data;
-        // if (!tcNo) {
-        //   return apiResponse.validationErrorWithData(res, "TC No bilgisi boş olamaz!", {});
-        // }
-        // Customer.find({ 'userId': userId, 'tcNo': tcNo }, function (err, findTC) {
-        //   if (findTC != null && findTC.length > 0) {
-        //     return apiResponse.notFoundResponse(res, "TC No daha önce kullanılmış!");
-        //   }
-        //   var customer = new Customer({
-        //     userId: data.userId,
-        //     firstName: data.firstName,
-        //     lastName: data.lastName,
-        //     phone: data.phone,
-        //     email: data.email,
-        //     tcNo: data.tcNo,
-        //   });
-        //   customer.save(function (err) {
-        //     if (err) {
-        //       return apiResponse.ErrorResponse(res, err);
-        //     }
-        //     let customerData = new CustomerData(customer);
-        //     return apiResponse.successResponseWithData(res, apiResponse.Success, customerData);
-        //   });
-        // });
-    }
-
-    private function Update($input)
-    {
-
-        //     const { userId, _id, tcNo } = data;
-        //     if (!mongoose.Types.ObjectId.isValid(_id)) {
-        //       return apiResponse.validationErrorWithData(res, apiResponse.InvalidInfo, {});
-        //     }
-        //     if (!tcNo) {
-        //       return apiResponse.validationErrorWithData(res, "TC No bilgisi boş olamaz!", {});
-        //     }
-
-        //     Customer.findById(_id, function (err, findId) {
-        //       if (findId === null) {
-        //         return apiResponse.notFoundResponse(res, apiResponse.RecordNotFound);
-        //       }
-        //       Customer.find({ 'userId': userId, 'tcNo': tcNo }, function (err, findTC) {
-        //         if (findTC != null && findTC.length > 0 && _id != findTC[0]._id) {
-        //           return apiResponse.notFoundResponse(res, "TC No daha önce kullanılmış!");
-        //         }
-
-        //         var customerObj = new Customer(data);
-        //         customerObj.updated = moment().format();
-
-        //         Customer.findByIdAndUpdate(_id, customerObj, {}, function (err) {
-        //           if (err) {
-        //             return apiResponse.ErrorResponse(res, err);
-        //           } else {
-        //             let customerData = new CustomerData(customerObj);
-        //             return apiResponse.successResponseWithData(res, apiResponse.Success, customerData);
-        //           }
-        //         });
-        //       });
-        //     });
-    }
-
-    private function Delete($input)
-    {
-        //     const { _id } = data;
-        //     if (!mongoose.Types.ObjectId.isValid(_id)) {
-        //       return apiResponse.validationErrorWithData(res, apiResponse.InvalidInfo, {});
-        //     }
-        //     Customer.findById(_id, function (err, foundCustomer) {
-        //       if (foundCustomer === null) {
-        //         return apiResponse.notFoundResponse(res, apiResponse.RecordNotFound);
-        //       } else {
-        //         Customer.findByIdAndRemove(_id, function (err) {
-        //           if (err) {
-        //             return apiResponse.ErrorResponse(res, err);
-        //           } else {
-        //             return apiResponse.successResponse(res, apiResponse.Success);
-        //           }
-        //         });
-        //       }
-        //     });
-    }
-
-    private function SelectCustomerStatistics($input)
+    private function SelectCustomerStatistics($request)
     {
         // try {
 
@@ -320,11 +255,9 @@ class CustomerController extends BaseController
         // }
     }
 
-    private function TransferRecords($input)
+    private function TransferRecords($request)
     {
         $userid = Auth::user()->id;
-        $data = $input["data"]; 
-        //$userid = $data["userId"]; 
 
         $resDeleteInsurance = \DB::table('insurances')
             ->join('customers', 'customers.id', '=', 'insurances.customer_id')
