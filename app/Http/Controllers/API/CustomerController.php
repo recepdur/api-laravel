@@ -121,7 +121,35 @@ class CustomerController extends BaseController
     private function SelectByColumns($request)
     {
         $userid = Auth::user()->id;
-        $customers = Customer::where('user_id', $userid)->get(); 
+        
+        $customers = Customer::query()
+            ->where('user_id', $userid)
+            ->when($request->has('data.status'), function ($query) use ($request) {
+                return $query->where('status', $request->input('data.status'));
+                //return $query->where(\DB::raw('status'), $request->input('data.status'));
+            })
+            ->when($request->has('data.first_name'), function ($query) use ($request) {
+                return $query->where(\DB::raw('LOWER(first_name)'), 'LIKE', strtolower($request->input('data.first_name'))."%");
+            })
+            ->when($request->has('data.last_name'), function ($query) use ($request) { 
+                return $query->where(\DB::raw('LOWER(last_name)'), 'LIKE', strtolower($request->input('data.last_name'))."%");
+            })
+            ->when($request->has('data.phone'), function ($query) use ($request) { 
+                return $query->where(\DB::raw('phone'), 'LIKE', "%".$request->input('data.phone')."%");
+            })
+            ->when($request->has('data.tc_no'), function ($query) use ($request) { 
+                return $query->where(\DB::raw('tc_no'), 'LIKE', "%".$request->input('data.tc_no')."%");
+            })
+            ->get();
+
+        // $customers = Customer::where('user_id', $userid)
+        //     //->where('first_name', 'LIKE', 'ali%')
+        //     //->whereRaw("LOWER('first_name') = 'ali'")
+        //     //->where(\DB::raw('LOWER(first_name)'), strtolower("ali"))
+        //     ->where(\DB::raw('LOWER(first_name)'), 'LIKE', "%".strtolower("ali")."%")       
+        //     ->take(100)
+        //     ->get(); 
+
         return $this->sendResponse(CustomerResource::collection($customers), 'Customers fetched.');
     } 
 
@@ -204,9 +232,13 @@ class CustomerController extends BaseController
             return $this->sendError('Customer does not exist.');
         }
 
-        // TODO sigorta var mı kontrolü yapılmalı foregin key hatası veriryor.
-        
-        $customer->delete();
+        if($customer->status) {
+            $customer->status = false;
+            $customer->save();
+        }else {
+            // TODO sigorta var mı kontrolü yapılmalı foregin key hatası veriryor.     
+            $customer->delete();
+        }        
 
         return $this->sendResponse(new CustomerResource($customer), 'Customer deleted.');
     }

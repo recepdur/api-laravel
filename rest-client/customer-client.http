@@ -22,7 +22,11 @@ Content-Type: application/json
 Authorization: Bearer {{access_token}}
 
 {
-    "methodName": "SelectByColumns"     
+    "methodName": "SelectByColumns",
+    "data": {
+        "cusStatus": true,
+        "first_name": "ali"
+    }   
 }
 
 ###
@@ -103,16 +107,6 @@ Authorization: Bearer {{access_token}}
     }
 }
 
-###
-POST {{apiurl_1}}/register
-Content-Type: application/json 
-
-{ 
-    "name" :"Recep 1", 
-    "email": "recep_1@gmail.com",
-    "password": "123456",
-    "confirm_password": "123456"
-}
 
 ###
 GET {{apiurl_1}}/customers
@@ -148,15 +142,5 @@ Authorization: Bearer {{access_token}}
 
 ###
 DELETE  {{apiurl_1}}/customers/1
-Content-Type: application/json
-Authorization: Bearer {{access_token}}
-
-###
-GET {{apiurl_1}}/insurances
-Content-Type: application/json
-Authorization: Bearer {{access_token}}
-
-###
-GET {{apiurl_1}}/insurances/1
 Content-Type: application/json
 Authorization: Bearer {{access_token}}

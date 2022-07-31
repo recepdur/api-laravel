@@ -1,0 +1,36 @@
+@apiurl_1 = http://localhost:8000/api
+@apiurl_2 = https://crm-laravel-api.herokuapp.com/api
+@access_token = {{login.response.body.$.data.access_token}}
+
+###
+GET {{apiurl_1}}
+Content-Type: application/json
+
+###
+# @name login
+POST {{apiurl_1}}/login
+Content-Type: application/json
+
+{  
+    "email": "recep_1@gmail.com",
+    "password": "123456"
+}
+
+###
+POST {{apiurl_1}}/register
+Content-Type: application/json
+
+{ 
+    "name" :"Recep 3", 
+    "email": "recep_5@gmail.com",
+    "password": "123456",
+    "confirm_password": "123456",
+    "phone": "5449128008"
+    //"status": true,
+    //"role": "admin"
+}
+
+###
+POST {{apiurl_1}}/getUsers
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
